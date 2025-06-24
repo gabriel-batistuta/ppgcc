@@ -34,6 +34,8 @@ def await_news():
         json.dump({'news': all_news}, file, indent=4, ensure_ascii=False)
     print(f"[INFO] Total de notícias coletadas: {len(all_news)}")
 
+    return all_news
+
 def extract_news_from_page(page: BeautifulSoup, all_news: list):
     """Extrai notícias de uma página agregadora e adiciona em `all_news`."""
     container = page.find('div', id='artigos')

@@ -4,3 +4,4 @@ venv/
 .vscode/
 .github/
 config.json
+news.json

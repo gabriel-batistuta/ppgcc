@@ -40,6 +40,28 @@ class DataBase():
         self.cursor.execute(f"""DROP TABLE IF EXISTS {table_name};""")
         self.cursor.commit()
 
+    def _create_table(self):
+        """Cria a tabela 'noticias' no banco PostgreSQL, com UUID e extensão uuid-ossp."""
+        # Habilita extensão para UUID
+        self.cursor.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+        # Criação da tabela
+        create_sql = '''
+        CREATE TABLE IF NOT EXISTS noticias (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            img_url TEXT,
+            data_publicacao DATE,
+            original_date TEXT,
+            titulo TEXT NOT NULL,
+            link TEXT UNIQUE NOT NULL,
+            descricao_parcial TEXT,
+            descricao_completa TEXT,
+            criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+        '''
+        self.cursor.execute(create_sql)
+        self.cursor.commit()
+        print("[INFO] Tabela 'noticias' criada com sucesso.")
+
     def _drop_all_tables(self):
         # Primeiro, buscar todos os nomes das tabelas no esquema público
         self.cursor.execute("""
@@ -68,64 +90,95 @@ class DataBase():
         self.cursor.execute(f"""SELECT * FROM {table_name};""")
         return self.cursor.fetchall()
 
-    def save_news(self, all_news):
-        # Abre conexão e cursor
+    def link_exists(self, link: str) -> bool:
+        """Verifica se já existe uma notícia com o mesmo link."""
+        self.cursor.execute("SELECT 1 FROM noticias WHERE link = ?", (link,))
+        return self.cursor.fetchone() is not None
 
+    def save_news(self, all_news):
+
+        new_news = [
+
+        ]
+
+        """Insere uma lista de notícias, pulando links já existentes."
+        """
+        # Novo insert: adiciona data_publicacao (hoje) e original_date (string)
         insert_sql = """
             INSERT INTO noticias (
                 img_url,
                 data_publicacao,
+                original_date,
                 titulo,
                 link,
                 descricao_parcial,
                 descricao_completa
-            ) VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT (link) DO NOTHING
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """
 
+        inserted_count = 0
+        today = datetime.today().date()
+
         for item in all_news:
-            # Converte data (string) para datetime.date
-            data = None
-            if item['date']:
-                try:
-                    data = datetime.strptime(item['date'], '%d/%m/%Y').date()
-                except ValueError:
-                    # Tente outros formatos ou ignore
-                    pass
+            link = item.get('link')
+            if not link:
+                print("[WARNING] Link ausente. Ignorando item.")
+                continue
+            if self.link_exists(link):
+                print(f"[INFO] Link já existe: {link}. Pulando...")
+                continue
+
+            new_news.append(item)
+            
+            # original date string
+            original_date = item.get('date')
+
+            # converte para data_publicacao: hoje
+            data_pub = today
 
             params = (
                 item.get('img'),
-                data,
+                data_pub,
+                original_date,
                 item.get('title'),
-                item.get('link'),
+                link,
                 item.get('partial_description'),
                 item.get('description')
             )
-
             self.cursor.execute(insert_sql, params)
+            inserted_count += 1
 
-        # Confirma e fecha
         self.cursor.commit()
-        self.cursor.close()
-        print(f"[INFO] Inseridas/atualizadas {len(all_news)} notícias.")
+        print(f"[INFO] Inseridas {inserted_count} novas notícias (duplicados ignorados).")
+        
+        return new_news
+
 
 # Exemplo de uso:
 if __name__ == '__main__':
     with open('config.json', 'r') as f:
         config = json.load(f)
 
-    db = DataBase(config)
-    # Supondo que all_news já foi preenchido pelo seu scraper
-    all_news = [
-        {
-            'img': 'https://...',
-            'date': '12/06/2025',
-            'title': 'Exemplo de notícia',
-            'link': 'https://...',
-            'partial_description': 'Resumo...',
-            'description': 'Conteúdo completo...'
-        },
-    ]
-    # db.save_news(all_news)
-    news = db.select_table('noticias')
-    print(news)
+    db = DataBase(config['database'])
+
+    """ SELECT -> """
+    
+    # noticias = db.select_table('noticias')
+    # print(f"[INFO] Total de notícias ({len(noticias)}) na tabela: {noticias}")
+
+
+    """ INSERT-> """
+    
+    # all_news = [
+    #     {
+    #         'img': 'https://...',
+    #         'date': '12/06/2025',
+    #         'title': 'Exemplo de notícia',
+    #         'link': 'https://...',
+    #         'partial_description': 'Resumo...',
+    #         'description': 'Conteúdo completo...'
+    #     },
+    # ]
+    # # db.save_news(all_news)
+    # news = db.select_table('noticias')
+    # print(news)
