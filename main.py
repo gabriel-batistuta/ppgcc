@@ -26,8 +26,6 @@ if __name__ == '__main__':
 
 	news = md.await_news()
 	db = md.DataBase(config['database'])
-	db._drop_all_tables()
-	db._create_table()
 	new_news = db.save_news(news)
 
 	for item in new_news:

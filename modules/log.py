@@ -38,8 +38,9 @@ send_to: list, files= None):
 # default_address = ['batistutag190@gmail.com', 'hyoudouissei047@gmail.com'] 
 
 if __name__ == '__main__':
-    send_email(send_from=username,
-    password=password,         
-    subject="ERROR - PPGCC TELEGRAM",
-    text=f"Erro ao enviar mensagem para o Telegram. ERROR: {e}",
-    send_to= default_address)
+    pass
+    # send_email(send_from=username,
+    # password=password,         
+    # subject="ERROR - PPGCC TELEGRAM",
+    # text=f"Erro ao enviar mensagem para o Telegram. ERROR: {e}",
+    # send_to= default_address)
