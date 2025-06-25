@@ -1,6 +1,18 @@
 import modules as md
 import json
-import sys
+
+import os, sys, logging
+
+logging.basicConfig(
+    filename="/home/ubuntu/ppgcc/ppgcc.log",
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s: %(message)s'
+)
+
+logging.debug(f"PWD = {os.getcwd()}")
+logging.debug(f"Python = {sys.executable}")
+logging.debug(f"Args = {sys.argv}")
+
 
 def manage_log(response):
 	log_config = config['log']

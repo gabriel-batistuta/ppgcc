@@ -5,3 +5,4 @@ venv/
 .github/
 config.json
 news.json
+ppgcc.log
