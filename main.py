@@ -42,8 +42,5 @@ if __name__ == '__main__':
 			response = bot.sendPhoto(photo_url=item['img'], caption=text)
 			manage_log(response)
 		else:
-			response = {
-				"response": False,
-				"message": "erro generico de teste"
-			}
+			response = bot.sendMessage(message=text)
 			manage_log(response)
