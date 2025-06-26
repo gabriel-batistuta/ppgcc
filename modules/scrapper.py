@@ -4,7 +4,7 @@ import json
 import re
 
 MAIN_URL = 'https://ppgcc.ufersa.edu.br/'
-MAX_NEWS_PAGES_CRAWL = 5 # número máximo de páginas agregadoras de notícias a serem percorridas
+MAX_NEWS_PAGES_CRAWL = 1 # número máximo de páginas agregadoras de notícias a serem percorridas
 
 def get_soup(url):
     page = requests.get(url)
